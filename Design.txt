@@ -1,0 +1,52 @@
+# Design.txt: write this first, top to bottom. /scaffold, /fr-tests, /nfr-tests, /pattern and
+# ./test-fr.sh ./test-nfr.sh ./run.sh all read it. Lines starting with # are ignored.
+# Replace every <...>. The indented # lines are format examples; delete them when you're done.
+
+PROBLEM: <one line, e.g. "Online food ordering">
+PACKAGE: <lowercase, e.g. fooddelivery>          # code goes to com.lld.<package>
+
+FUNCTIONAL REQUIREMENTS
+# One testable statement each: actor + action + rule. /fr-tests writes a happy and a negative test per line.
+#   FR-1: A customer can place an order with 1-20 items from one open restaurant.
+#   FR-2: An order can be cancelled only before it is picked up.
+FR-1: <...>
+FR-2: <...>
+
+NON-FUNCTIONAL REQUIREMENTS
+# Give a number, or it can't be tested. Tag the kind in brackets.
+#   NFR-1 (consistency): a rider is never assigned to two active orders, even with 50 orders at once.
+#   NFR-2 (idempotency): retrying placeOrder with the same request id creates one order.
+#   NFR-3 (latency): placeOrder takes < 5 ms p99 in memory.
+NFR-1 (<kind>): <...>
+
+ENTITIES
+# Name [kind]: fields. Kinds: entity (has id + lifecycle), value (immutable record), enum.
+# Refer to other entities by id. Enum transitions: STATE -> NEXT, NEXT2
+#   Order [entity]: customerId, restaurantId, items(List<OrderItem>), status(OrderStatus), total(long)
+#   OrderItem [value]: menuItemId, quantity(int), price(long)
+#   OrderStatus [enum]: PLACED -> ACCEPTED, CANCELLED ; ACCEPTED -> PICKED_UP, CANCELLED ; PICKED_UP -> DELIVERED
+<Entity> [entity]: <fields>
+
+REPOSITORIES
+# One per entity you store. Extra finders beyond save / findById / findAll.
+#   OrderRepository: findByCustomer(customerId), findByStatus(status)
+<Entity>Repository: <finders>
+
+MANAGERS
+# Business rules, one manager per entity or area. method(params) -> return
+#   OrderManager: placeOrder(customerId, restaurantId, items) -> Order ; cancel(orderId) -> Order
+#   RiderManager: assignRider(orderId) -> Rider
+<Area>Manager: <method(params) -> Return> ; <...>
+
+ORCHESTRATOR
+# The single facade that tests and Demo call. List its public methods; each delegates to managers.
+# Include the setup methods (register/add/schedule...) so tests can build state through the facade.
+#   FoodDeliveryOrchestrator: addRestaurant, registerCustomer, placeOrder, cancelOrder, assignRider, getOrder
+<Problem>Orchestrator: <methods>
+
+PATTERNS
+# Pattern | where | intuition. Apply one at a time with /pattern (see docs/pattern-roadmap.md).
+#   State    | Order lifecycle                | moves allowed depend on status
+#   Strategy | delivery fee in OrderManager   | fee rules vary by distance and surge
+#   Observer | order events -> notifications  | several reactions to one event
+<Pattern> | <where> | <intuition>

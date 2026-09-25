@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn -q compile)",
+      "Bash(mvn -q test)",
+      "Bash(mvn -q -o compile)",
+      "Bash(mvn -q -o test)",
+      "Bash(./run.sh)",
+      "Bash(./run.sh:*)",
+      "Bash(./test-fr.sh)",
+      "Bash(./test-fr.sh:*)",
+      "Bash(./test-nfr.sh)",
+      "Bash(./test-nfr.sh:*)",
+      "Bash(./selfcheck.sh)"
+    ],
+    "deny": [
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.m2/settings.xml)",
+      "Read(~/.m2/settings-security.xml)",
+      "Read(~/.gradle/gradle.properties)",
+      "Read(//Volumes/**)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(ssh:*)",
+      "Bash(scp:*)",
+      "Bash(git push:*)",
+      "Bash(rm -rf:*)"
+    ]
+  }
+}

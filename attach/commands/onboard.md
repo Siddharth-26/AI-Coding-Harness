@@ -1,0 +1,23 @@
+---
+description: Map this repo fast (build, tests, stubs, failures) and write .claude/harness/REPO_NOTES.md. Changes no code.
+argument-hint: [the problem statement, or which part to focus on]
+---
+Onboard me to this repository. Extra context: $ARGUMENTS
+
+Read `.claude/harness/RULES.md` first and follow it. Do not change any code in this step.
+
+1. **Build and run.** Detect the build tool, Java version, and test libraries (JUnit 4/5, TestNG,
+   AssertJ, Mockito...). Work out the exact commands to: compile; run all tests; run one test
+   class; run one test method. Run all tests once.
+2. **Map.** Packages, and the role of each main class in one line (at most 15 lines). Entry
+   points: `main`, facades, and the interfaces the tests call.
+3. **Gaps.** Every stub: TODO/FIXME, `throw new UnsupportedOperationException`, placeholder
+   `return null` / `0` / `false`, empty method bodies. List them as file:line plus one line each.
+4. **Tests.** For each test class: which production API it exercises, and pass/fail counts from
+   the run. Group the failures by the gap they depend on.
+5. **Suggested order.** The gaps in the order that turns the most tests green first, with the tests
+   each one should fix. Do not hint at algorithms.
+
+Write all of this to `.claude/harness/REPO_NOTES.md`, with the section 1 commands verbatim because
+later commands reuse them. Then show me a one-screen summary: the build and test commands, the gap
+list, the test status, and the suggested order.
