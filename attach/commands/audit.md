@@ -13,7 +13,9 @@ Output a punch list, most severe first. Each item:
 
 Check, in this order:
 1. Breaks of `.claude/harness/RULES.md`: edited or skipped provided tests, renamed or reshaped a
-   public API, new dependency, style that doesn't match the repo.
+   public API, new dependency, style that doesn't match the repo; code that differs from my
+   Design.txt without a `// DRIFT:` line; an FR behaviour (returns, throws, changes) with no
+   asserting test.
 2. Race conditions: check-then-act on shared state, non-atomic read-modify-write, missing locks
    around multi-step updates, lock ordering.
 3. SOLID: type switches that should be polymorphism or a strategy, services doing entity work,

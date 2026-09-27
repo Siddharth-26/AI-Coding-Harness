@@ -1,29 +1,36 @@
 ---
-description: Apply ONE design pattern where you say, for the reason you give. Keeps the facade API and tests green, and names the extension point.
-argument-hint: <Pattern> — <where: class/method/area> — <intuition: what varies, reacts or validates>
+description: Apply ONE design pattern in the problem folder, where you say, for the reason you give. Keeps Design.txt's signatures and the tests green, marks drift, names the extension point.
+argument-hint: <problem folder> <Pattern> — <where: class/method> — <intuition: what varies, reacts or validates>
 ---
 Apply this pattern: $ARGUMENTS
 
+**Folder.** The first argument is the problem folder if it is a folder; otherwise run
+`./lld.sh list` and take the only or newest one. Say which in your first line. The rest is
+`<Pattern> — <where> — <intuition>`; if I only gave a pattern name, use the matching line in the
+PATTERNS part of `<folder>/Design.txt` (never edit Design.txt).
+
 1. Read the card for this pattern in `docs/pattern-roadmap.md`, the code at the place I named, and
-   `Design.txt`. If I only gave a pattern name, use the matching line in Design.txt's PATTERNS section.
-2. Fit check, one line only: if the intuition doesn't match the pattern's signal, say so and name the
-   better-fitting pattern from the roadmap, then do what I asked unless I stop you.
-3. Implement it the way the card shows:
-   - put it in the layer the card says (model, or a `<concept>/` package named after what varies:
-     `pricing/`, `assignment/`, `notification/`, `validation/`);
-   - use domain names (`DeliveryFeeStrategy`, `OrderStatus`, `EligibilityRule`), never generic
-     `Strategy<I, O>` names;
-   - move the varying or reacting behaviour out of the manager behind the new interface, inject it
-     through the constructor, and wire the default implementation(s) in `<Problem>Orchestrator.create()`;
+   Design.txt.
+2. Fit check, one line only: if the intuition doesn't match the pattern's signal, say so and name
+   the better-fitting pattern from the roadmap, then do what I asked unless I stop you.
+3. Implement it in `<folder>/main/`, the way the card shows:
+   - if Design.txt already declares the pattern's types (an `EvictionPolicy` interface, say),
+     implement exactly those signatures;
+   - otherwise use domain names (`EvictionPolicy`, `FareRule`), never generic `Strategy<I, O>`,
+     and mark each new type and each changed method `// DRIFT: not in Design.txt -> <what>,
+     because pattern <Pattern>: <intuition>`;
+   - move the varying or reacting behaviour behind the new interface and inject it through a
+     constructor. Every constructor and public method Design.txt declares keeps working exactly
+     as declared (add an overload for the injected type if needed, marked DRIFT);
    - at least two implementations where the pattern is about variation (Strategy, Factory,
      Decorator, Chain), so the extension point is real.
-4. Don't change the orchestrator's public methods or any test. Run `mvn -q compile` and
-   `./test-fr.sh` (and `./test-nfr.sh` if it exists). Tests must be as green as they were before;
-   if one breaks, fix the code, not the test.
+4. Don't change any test. Run `./lld.sh compile <folder>` and `./lld.sh test <folder>`. Tests
+   must be as green as they were before; if one breaks, fix the code, not the test.
 
-Report in at most 8 lines:
+**Reply in at most 10 lines:**
 - files added and changed;
-- the extension point: "to add <X>, write a class implementing <Y> and register it in <Z>;
-  nothing else changes";
+- the extension point: "to add <X>, write a class implementing <Y> and pass it to <Z>; nothing
+  else changes";
 - the principle it serves (SRP / OCP / DIP / LSP) in one sentence;
+- **Drift**: the DRIFT lines added, or "none";
 - the one question an interviewer is most likely to ask about it, with a one-line answer.

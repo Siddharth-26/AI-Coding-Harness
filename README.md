@@ -1,117 +1,137 @@
 # Machine-coding harness (core Java 17)
 
-Problem-agnostic. Nothing in here is tied to a specific interview question. You write the design;
-the harness turns it into layered code, a test for every requirement, and the patterns you choose.
+Problem-agnostic. You write the design in your own problem folder; the harness builds exactly the
+classes and signatures you wrote, writes tests for every behaviour your FRs state, and tells you how
+to run them. It never edits your Design.txt and never writes outside your folder.
 
 ## The loop
 
-| # | You | Harness |
+| # | You | Harness (Kiro CLI `@name`, Claude Code `/name`) |
 |---|---|---|
-| 1 | Fill `Design.txt` top to bottom: PROBLEM, PACKAGE, FRs, NFRs, ENTITIES, REPOSITORIES, MANAGERS, ORCHESTRATOR, PATTERNS | |
-| 2 | Review the generated layers | `/scaffold`: model, repository (interface + in-memory), manager (interface + Default impl with TODO bodies), the Orchestrator facade with `create(clock, events)`, Demo. Compiles. |
-| 3 | Show the red checklist | `/fr-tests`: a happy and a negative test per FR, through the facade. `./test-fr.sh` → all FAIL |
-| 4 | **Prompt the implementation yourself**, one manager method at a time | `./test-fr.sh` → green |
-| 5 | Make it extensible, one PATTERNS line at a time | `/pattern Strategy — fee calc in OrderManager — rules vary by distance` → built into the right layer, tests stay green, extension point named |
-| 6 | Prove the NFRs | `/nfr-tests` → `./test-nfr.sh` prints measured numbers |
-| 7 | Pre-empt the critique, then zoom out | `/audit`, then `/hld <scale numbers>` |
+| 1 | Make a folder and write `Design.txt` in it, in your own format: FRs, NFRs, classes and signatures, patterns | |
+| 2 | Set it up | `./lld.sh init lrucache` → `pom.xml`, `main/`, `test/` (Design.txt untouched) |
+| 3 | Review the skeleton | `@scaffold lrucache` → exactly your classes and signatures in `main/`, TODO bodies, compiles |
+| 4 | Show the red checklist | `@fr-tests lrucache` → a test per behaviour each FR states, in `test/`; ends with how to run them |
+| 5 | **Prompt the implementation yourself** | `./lld.sh test lrucache fr` → green |
+| 6 | Make it extensible, one pattern at a time | `@pattern lrucache Strategy — eviction in LRUCache — LRU today, LFU later` |
+| 7 | Prove the NFRs | `@nfr-tests lrucache` → `./lld.sh test lrucache nfr` prints measured numbers |
+| 8 | Pre-empt the critique, then zoom out | `@audit lrucache`, `./lld.sh drift lrucache`, `@hld lrucache <scale numbers>` |
 
-Stuck on the approach? `/hint <what>` (then `more`, then `code`). The agent never suggests the core
-approach unless you ask.
+Stuck on the approach? `@hint lrucache <what>` (then `more`, then `code`). The agent never suggests
+the core approach unless you ask.
+
+## Your problem folder
+
+```
+lrucache/                  anywhere: next to lld.sh (simplest) or inside src/main/java
+  Design.txt               yours, any format, any capitalisation. Nothing edits it.
+  pom.xml                  from ./lld.sh init: the folder is its own small Maven project
+  main/lrucache/...        the code (package = folder name, unless Design.txt names one)
+  test/lrucache/...        LRUCacheFrTest, LRUCacheNfrTest (same package as the code)
+  test/com/lld/core/...    test kit: RequirementReporter (the PASS/FAIL checklist), ConcurrentRunner, Perf, MutableClock
+```
+`templates/Design.example.txt` is an LRU example of a Design.txt the harness reads well. The things
+that matter: numbered FRs that say exactly what is returned / thrown / changed, NFRs with numbers,
+and your method signatures.
+
+## The rules the agent follows (AGENTS.md)
+
+- **Design.txt is read-only.** Never edited, rewritten or restated.
+- **Your signatures are a contract.** Classes, methods, parameter and return types exactly as written.
+- **Only what you named.** No default manager / orchestrator / facade / repository layers, and no
+  class that only forwards calls to another.
+- **Improvements are allowed but visible.** If an FR or NFR needs a change (a lock for thread
+  safety, `ConcurrentHashMap.compute`, a different return type), the agent makes it and writes a
+  comment inside every affected method:
+  ```java
+  // DRIFT: not in Design.txt -> check, evict and insert under the cache lock, because NFR-1: two puts must not both see room
+  ```
+  `./lld.sh drift lrucache` lists every one, so you can explain each change.
+- **Behaviour comes from the FRs.** "put on a full cache returns the evicted key" becomes code that
+  returns it and a test that asserts `Optional.of("a")`.
+- **Tests live in your folder** and every test command ends with how to run them.
+
+## lld.sh
+
+| Command | Does |
+|---|---|
+| `./lld.sh init <folder>` | `pom.xml`, `main/`, `test/`, test kit. Never touches Design.txt or existing files |
+| `./lld.sh test <folder> fr` / `nfr` / (nothing = all) | Run the FR / NFR / all tests and print the checklist |
+| `./lld.sh test <folder> 'LRUCacheFrTest#fr3_a_putOnFullCacheReturnsEvictedKey'` | One test (quote it: zsh treats `#` specially) |
+| `./lld.sh howto <folder>` | The exact commands to run this folder's tests (also from inside it, plain Maven, IntelliJ) |
+| `./lld.sh drift <folder>` | Every DRIFT comment: where the code differs from Design.txt |
+| `./lld.sh compile <folder>` / `run <folder> [MainClass]` | Compile / run the class with `main()` |
+| `./lld.sh core <folder>` | Copy the building blocks (KeyedLockManager, ExpiringHolds, IdempotencyStore, SingleFlight, RetryPolicy, EventBus, realtime/) into the folder, only when an NFR needs one |
+| `./lld.sh list` | Your problem folders, newest first |
+
+Leave out `<folder>` when you're inside it (`../lld.sh test fr`). From the harness root without a
+folder, the newest Design.txt is used and named. Without the script: `cd lrucache && mvn -q test
+-Dtest='*FrTest'`. In IntelliJ: right-click `lrucache/pom.xml` → Add as Maven Project (once), then
+the green run arrows. Offline: `MAVEN_ARGS=-o ./lld.sh test lrucache fr`.
 
 ## What's here
 
 ```
-Design.txt              your design; every command and script reads it
-AGENTS.md               rules for the agent: layers, conventions, concurrency, tests
+AGENTS.md               rules for the agent (read automatically by Kiro CLI; CLAUDE.md loads it)
 CLAUDE.md               Claude Code: loads AGENTS.md
-.kiro/steering/         Kiro: harness.md only (always loaded); keep it the only file there
-.kiro/prompts/          Kiro CLI: the commands as @scaffold @fr-tests @nfr-tests @pattern @audit @hld @hint
-.claude/commands/       Claude Code: the same commands as /scaffold /fr-tests ... (the source of truth)
-kiro-sync.sh            regenerates .kiro/prompts from .claude/commands after you edit a command
-docs/pattern-roadmap.md 20 patterns in the order you'd introduce them: signal, layer, template,
-                        extension point, and the /pattern line to type
-docs/hints.md           problem shape -> core algorithm (used by /hint)
+.kiro/steering/         harness.md only (always loaded); keep it the only file there
+.kiro/prompts/          Kiro CLI commands: @scaffold @fr-tests @nfr-tests @pattern @audit @hld @hint
+.claude/commands/       the same commands for Claude Code (the source; ./kiro-sync.sh copies them to .kiro/prompts)
+lld.sh                  set up, build, test one problem folder
+templates/              problem-pom.xml (used by init), Design.example.txt
+docs/pattern-roadmap.md 20 patterns in the order you'd introduce them, with the @pattern line to type
+docs/hints.md           problem shape -> core algorithm (used by @hint)
 hld/TEMPLATE.md         HLD skeleton with Mermaid
-src/main/java/com/lld/core/   generic building blocks only (no problem code):
-    Repository, InMemoryRepository, IdGenerator, exceptions, EventBus, KeyedLockManager,
-    MutableClock, SingleFlight, IdempotencyStore, ExpiringHolds, RetryPolicy, realtime/
-src/test/java/com/lld/core/   ConcurrentRunner, Perf, RequirementReporter (+ the harness's own
-                              *SelfCheck tests, which never run in a normal test run)
+src/main/java/com/lld/core/   building blocks (copied into a folder only by ./lld.sh core)
+src/test/java/com/lld/core/   the test kit + the harness's own *SelfCheck tests (./selfcheck.sh)
+attach.sh / detach.sh   bring the commands into a repo they give you, and remove them again
+lockdown.sh, claude-personal.sh   Claude Code only: keep it inside this project / personal profile
 ```
-Your problem's code goes in `src/main/java/com/lld/<PACKAGE>/` and its tests in
-`src/test/java/com/lld/<PACKAGE>/`. Nothing else runs when you test.
-
-## Layers (what /scaffold builds and /audit checks)
-
-`model/` (entities, value records, enums with transition tables) → `repository/`
-(`XRepository` interface + `InMemoryXRepository`) → `manager/` (`XManager` interface +
-`DefaultXManager`: the business rules) → `<Problem>Orchestrator` (the facade: the only entry
-point, delegates to managers, and `create()` wires everything). Patterns go in packages named after
-what varies (`pricing/`, `cancellation/`, `notification/`).
-
-## Scripts
-
-| Script | Does |
-|---|---|
-| `./test-fr.sh` / `./test-nfr.sh` | Run your FR / NFR tests (package from Design.txt) and print the PASS/FAIL checklist |
-| `./run.sh` | Run your Demo |
-| `./selfcheck.sh` | Run the harness's own 35 checks once after setup |
-| `./lockdown.sh` | Block Claude from reading anything in your home folder outside this project |
-| `./claude-personal.sh [repo]` | Start Claude Code with a separate personal profile (work Mac) |
-| `./attach.sh <repo>` / `./detach.sh <repo>` | Bring the commands (Kiro CLI `@` and Claude `/`) into a repo they give you, and remove them again |
-| `./kiro-sync.sh` | Regenerate `.kiro/prompts/` after editing a command |
+The root `pom.xml` builds only `com/lld/core`, so a problem folder inside `src/main/java` never
+breaks the Maven build. IntelliJ doesn't know that: if your folder is inside `src/main/java`,
+right-click its `pom.xml` → Add as Maven Project straight away, or keep problem folders next to
+`lld.sh` (the simplest).
 
 ## Using it with Kiro CLI
 
 ```bash
-cd ~/ai-coding-practice
-kiro-cli                 # start chat in the project folder
+cd <harness folder>
+kiro-cli
 ```
-- **Loaded automatically in every session:** `AGENTS.md` (project root) and `.kiro/steering/harness.md`.
-  Check once with `/context show`, and by asking "What layers and naming does this project use?".
-  It should answer model / repository / manager / Orchestrator and `Default<X>Manager`.
-- **Commands are saved prompts**, called with `@` plus your arguments on the same line:
-  `@scaffold`, `@fr-tests`, `@nfr-tests`, `@audit`, `@hld`, `@hint <what>`, and
-  `@pattern Strategy — fee calc in OrderManager — rules vary by distance`.
-  If the arguments don't come through (older CLI versions need the whole line in single quotes),
-  inject the file instead: `@.kiro/prompts/pattern.md Strategy — fee calc — rules vary`. That always works.
-- **Keep `.kiro/steering/` to the one file.** Kiro CLI ignores inclusion modes and loads every file in
-  that folder into every session, which is why the commands live in `.kiro/prompts/`.
-- The first time the agent runs `mvn` or a test script, approve it and trust that tool for the session
-  so you're not prompted every time. Still read every file change before accepting it: that review is
-  what the interviewer wants to see.
-- `lockdown.sh`, `claude-personal.sh` and `.claude/settings.json` only affect Claude Code.
-- Edited a command in `.claude/commands/`? Run `./kiro-sync.sh` so `.kiro/prompts/` matches.
-- Kiro **IDE** instead of the CLI: the IDE supports on-demand steering (`#name`), the CLI doesn't; ask
-  me if you switch and I'll generate that variant.
+- Loaded in every session: `AGENTS.md` and `.kiro/steering/harness.md`. Check once by asking "Where
+  do tests go and what is a DRIFT comment?". It should say `<folder>/test/<pkg>` and the DRIFT rule.
+- Commands: `@scaffold lrucache`, `@fr-tests lrucache`, `@pattern lrucache Strategy — ... — ...`.
+  If the arguments don't come through, inject the file instead:
+  `@.kiro/prompts/fr-tests.md lrucache`. That always works.
+- The first time the agent runs `./lld.sh`, approve it and trust it for the session. Still read every
+  file change before accepting it; that review is what the interviewer wants to see.
+- Edited a command in `.claude/commands/`? Run `./kiro-sync.sh`.
 
-## One-time setup
+## Updating your GitHub copy
 
+Unpack over your clone (it replaces files, it doesn't delete), remove the four files this version
+dropped, and commit:
 ```bash
-mkdir -p ~/ai-coding-practice && tar -xzf ~/Downloads/lld-harness.tar.gz -C ~/ai-coding-practice --strip-components=1
-cd ~/ai-coding-practice
-./selfcheck.sh              # 35 checks pass (first run downloads JUnit)
-mvn -o -q compile           # wifi off: proves nothing needs the network
-./lockdown.sh
-./claude-personal.sh        # /login with your personal account; /status to confirm
+cd <your clone of AI-Coding-Harness>
+tar -xzf ~/Downloads/lld-harness.tar.gz --strip-components=1
+git rm -q --ignore-unmatch Design.txt test-fr.sh test-nfr.sh run.sh
+chmod +x lld.sh
+git add -A && git commit -m "Problem-folder model: read-only Design.txt, DRIFT comments, tests in the folder" && git push
+./selfcheck.sh
 ```
-Open the folder in IntelliJ, and run `./claude-personal.sh` from its terminal. Close other projects;
-the IDE plugin shares whatever file you have open.
 
 ## When they give you a repo
 
 ```bash
 git clone <their repo> clones/<name>
 ./attach.sh clones/<name>
-./claude-personal.sh clones/<name>
 ```
-In their repo: `/onboard` (maps build, tests, stubs, failures), fill the `Design.txt` attach put in
-the root, then `/fr-tests`, `/next`, `/pattern`, `/nfr-tests`, `/audit`, `/hld`, and `/hint` when
-stuck. Their conventions win and their tests are never edited. Everything attach adds is
-git-excluded; run `./detach.sh clones/<name>` before you zip or hand it back.
+In their repo: `@onboard`, write your Design.txt anywhere in it (git-excluded by name), then
+`@fr-tests`, `@next`, `@pattern`, `@nfr-tests`, `@audit`, `@hld`, and `@hint` when stuck. Their
+conventions and tests win; the DRIFT rule applies to your Design.txt. Run `./detach.sh clones/<name>`
+before you zip or hand it back.
 
 ## Practice routine
 
-Pick any problem (not from a list), give yourself 90 minutes for steps 1-7, then read what
-`/audit` found that you missed. Do a fresh `Design.txt` each time; move the old package out
-(`git stash -u`, or commit it to a practice branch).
+Pick any problem (not from a list): new folder, new Design.txt, 90 minutes for steps 1-8, then read
+what `@audit` found that you missed. Old folders stay as they are; `./lld.sh list` shows them.

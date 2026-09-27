@@ -1,16 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mvn -q compile)",
-      "Bash(mvn -q test)",
-      "Bash(mvn -q -o compile)",
-      "Bash(mvn -q -o test)",
-      "Bash(./run.sh)",
-      "Bash(./run.sh:*)",
-      "Bash(./test-fr.sh)",
-      "Bash(./test-fr.sh:*)",
-      "Bash(./test-nfr.sh)",
-      "Bash(./test-nfr.sh:*)",
+      "Bash(./lld.sh:*)",
+      "Bash(mvn -q -f:*)",
+      "Bash(mvn -q test:*)",
+      "Bash(mvn -q test-compile)",
       "Bash(./selfcheck.sh)"
     ],
     "deny": [

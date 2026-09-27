@@ -1,0 +1,47 @@
+EXAMPLE ONLY. Write your own Design.txt in your problem folder, in any format you like.
+The harness never edits it. It reads four things from it, so make these easy to find:
+  1. numbered FRs, each with the exact behaviour (what is RETURNED, what is THROWN, what changes)
+  2. numbered NFRs, each with a number (threads, ms, ops/s), or it can't be tested
+  3. the classes / interfaces and their method signatures: these are the contract
+  4. the patterns you want, with the intuition
+Folder layout it lives in:   lrucache/Design.txt   lrucache/main/   lrucache/test/
+----------------------------------------------------------------------------------------------
+
+LRU Cache
+
+FUNCTIONAL REQUIREMENTS
+FR-1: get(key) returns the value if the key is present and makes that key the most recently used.
+      If the key is absent it returns Optional.empty().
+FR-2: put(key, value) inserts a new key or updates an existing one; either way the key becomes the
+      most recently used.
+FR-3: put of a NEW key into a full cache evicts the least recently used key and RETURNS that key.
+      A put that evicts nothing returns Optional.empty() (this includes updating an existing key
+      in a full cache).
+FR-4: new LRUCache(capacity) with capacity <= 0 throws IllegalArgumentException.
+      A null key or value throws NullPointerException.
+
+NON-FUNCTIONAL REQUIREMENTS
+NFR-1 (thread safety): 8 threads x 10,000 random get/put on keys 0..99, capacity 50: no exception,
+      size() never exceeds 50, and every value read for key k is one that was put for k.
+NFR-2 (latency): get and put are O(1): p99 under 50 microseconds with 100,000 entries.
+
+CLASSES / INTERFACES
+interface Cache<K, V>
+    Optional<V> get(K key)
+    Optional<K> put(K key, V value)        // the evicted key, if any
+    int size()
+
+class LRUCache<K, V> implements Cache<K, V>
+    LRUCache(int capacity)
+    fields: int capacity, Map<K, V> values, EvictionPolicy<K> policy
+
+interface EvictionPolicy<K>
+    void keyAccessed(K key)                // on every get hit and every put
+    Optional<K> evict()                    // removes and returns the victim
+    void remove(K key)
+
+class LRUEvictionPolicy<K> implements EvictionPolicy<K>
+    fields: Map<K, Node<K>> nodes, Node<K> head, Node<K> tail   // doubly linked list, head = most recent
+
+PATTERNS
+Strategy | EvictionPolicy used by LRUCache | the eviction rule varies: LRU today, LFU later

@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Created by lld.sh init. It makes this problem folder a small Maven project of its own:
+    main/  your code        test/  its tests (+ test/com/lld/core: the harness test kit)
+  Design.txt next to this file is yours; nothing here reads or changes it.
+  Run:  ./lld.sh test <this folder> fr | nfr | all        or, inside this folder:  mvn -q test -Dtest='*FrTest'
+  IntelliJ: right-click this pom.xml > Add as Maven Project (once), then use the green run arrows.
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.lld</groupId>
-    <artifactId>lld-harness</artifactId>
+    <groupId>practice</groupId>
+    <artifactId>__ARTIFACT__</artifactId>
     <version>1.0.0</version>
-    <name>LLD Interview Harness (core Java)</name>
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
@@ -25,21 +31,13 @@
     </dependencies>
 
     <build>
+        <sourceDirectory>main</sourceDirectory>
+        <testSourceDirectory>test</testSourceDirectory>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
-                <configuration>
-                    <!-- The root project builds only the harness itself. A problem folder you create
-                         inside src/main/java is its own Maven project (./lld.sh init) and is skipped here. -->
-                    <includes>
-                        <include>com/lld/core/**</include>
-                    </includes>
-                    <testIncludes>
-                        <testInclude>com/lld/core/**</testInclude>
-                    </testIncludes>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

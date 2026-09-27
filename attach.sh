@@ -13,9 +13,9 @@
 #   .claude/commands/  onboard, next, hint, fr-tests, nfr-tests, pattern, audit, hld (Claude Code: /name)
 #   .kiro/prompts/     the same commands for Kiro CLI (@name); a prompt the repo already has is left alone
 #   .kiro/steering/harness-rules.md   the RULES.md text, always loaded by Kiro
-#   .claude/harness/   RULES.md, hints.md, pattern-roadmap.md, the HLD template, and the
-#                      harness building blocks as read-only reference (not compiled)
-#   Design.txt              template in the repo root, only if the repo has none (you fill it)
+#   .claude/harness/   RULES.md, hints.md, pattern-roadmap.md, the HLD template, an example
+#                      Design.txt, and the harness building blocks as read-only reference (not compiled)
+#   (your own Design.txt, wherever you write it, is git-excluded by name too)
 #   CLAUDE.md, AGENTS.md    only if the repo has none (they load RULES.md)
 #   .claude/settings.json   only if the repo has none (its build commands pre-approved + deny rules)
 #   .claude/settings.local.json   via ./lockdown.sh: Claude can't read outside this repo
@@ -88,13 +88,8 @@ cp "$harness/hld/TEMPLATE.md"          "$hdir/HLD-TEMPLATE.md"
 mkdir -p "$hdir/blocks"
 cp -R "$harness/src/main/java/com/lld/core/." "$hdir/blocks/"
 
-# ---------- Design.txt for this problem ----------
-if [[ -e "$target/Design.txt" ]]; then
-  skipped+=("Design.txt (the repo already has one)")
-else
-  cp "$harness/Design.txt" "$target/Design.txt"
-  added+=("Design.txt")
-fi
+# ---------- an example Design.txt (you write your own, anywhere in the repo) ----------
+cp "$harness/templates/Design.example.txt" "$hdir/Design.example.txt"
 
 # ---------- instructions for the agent ----------
 if [[ -e "$target/CLAUDE.md" ]]; then
@@ -178,6 +173,8 @@ if git -C "$target" rev-parse --git-dir > /dev/null 2>&1; then
   {
     echo "# >>> lld-harness (added by attach.sh, removed by detach.sh)"
     echo "/.claude/harness/"
+    echo "[Dd]esign.txt"
+    echo "DESIGN.txt"
     for path in "${added[@]}"; do
       echo "/$path"
     done
@@ -195,7 +192,8 @@ for s in ${skipped[@]+"${skipped[@]}"}; do
 done
 echo
 echo "Next:"
-echo "  Kiro CLI:    cd \"$target\" && kiro-cli, then @onboard, fill Design.txt, @fr-tests, @next,"
+echo "  Write your Design.txt (anywhere in the repo; example: .claude/harness/Design.example.txt)"
+echo "  Kiro CLI:    cd \"$target\" && kiro-cli, then @onboard, @fr-tests, @next,"
 echo "               @pattern, @nfr-tests, @audit, @hld (@hint when stuck)"
 echo "  Claude Code: $harness/claude-personal.sh \"$target\", then the same commands with /"
 echo "  Before you zip or hand the repo back: $harness/detach.sh \"$target\""

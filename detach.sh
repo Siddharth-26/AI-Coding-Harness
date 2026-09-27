@@ -35,3 +35,6 @@ if git -C "$target" rev-parse --git-dir > /dev/null 2>&1; then
 fi
 
 echo "Detached: removed $removed files and .claude/harness/ from $target"
+while IFS= read -r design; do
+  echo "  kept your ${design#"$target"/} (no longer git-excluded): delete it before you zip or push if it shouldn't go with the repo"
+done < <(find "$target" -name .git -prune -o -type f -iname 'design.txt' -print 2> /dev/null)

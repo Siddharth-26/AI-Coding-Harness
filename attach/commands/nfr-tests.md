@@ -1,11 +1,12 @@
 ---
 description: Write tests checking each non-functional requirement (NFR-n), in this repo's own test style
-argument-hint: [NFR-1: ...; NFR-2: ...]   (no arguments = read Design.txt)
+argument-hint: [NFR-1: ...; NFR-2: ...]   (no arguments = read my Design.txt)
 ---
 Write non-functional-requirement tests. Requirements: $ARGUMENTS
 
-Follow `.claude/harness/RULES.md`. If no NFRs are given, read the NON-FUNCTIONAL REQUIREMENTS section of
-`Design.txt` in the repo root (ignore `#` lines). If an NFR has no number (count, time, rate), ask me for one.
+Follow `.claude/harness/RULES.md`. If no NFRs are given, read the NFRs in my `Design.txt` (the path I
+give, or the one in this repo, any capitalisation; never edit it). If an NFR has no number (count,
+time, rate), ask me for one.
 
 Use the repo's own test framework and no new dependencies. Put the helpers you need as private
 static methods inside the new test class `<Feature>NfrTest` (same package as the class under test):
@@ -27,3 +28,5 @@ Map each NFR to exactly one kind of check:
 Naming as in /fr-tests but with `NFR-n` / `nfrN_`. Don't change main code. Run only this class with
 the single-class command from `.claude/harness/REPO_NOTES.md`, and show the measured numbers. For
 each failure, explain what it means about the design and propose the smallest fix without applying it.
+End with **How to run**: the exact commands (from `.claude/harness/REPO_NOTES.md`) to run this class,
+one of its methods, and all tests.

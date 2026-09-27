@@ -1,0 +1,10 @@
+[2026-09-26T08:35:10.147Z] ai-coding start failed
+phase: CLONE  kind: DirectoryExists
+cli: 0.2.2  node: v25.2.1  os: darwin 25.6.0 arm64
+error: Directory [1mlru-cache-any[22m already exists. Remove it or start in a clean location.
+
+[2026-09-26T08:35:15.842Z] ai-coding start failed
+phase: CLONE  kind: DirectoryExists
+cli: 0.2.2  node: v25.2.1  os: darwin 25.6.0 arm64
+error: Directory [1mlru-cache-any[22m already exists. Remove it or start in a clean location.
+

@@ -1,15 +1,21 @@
 # Pattern roadmap
 
-How to use it: once the layers from `/scaffold` work, read your FRs, find the signals below, and
-add patterns one at a time with
+How to use it: once the classes from `/scaffold <folder>` compile, read your FRs, find the signals
+below, and add patterns one at a time with
 
 ```
-/pattern <Pattern> — <where it goes> — <intuition: what varies / reacts / validates>
+/pattern <folder> <Pattern> — <where it goes> — <intuition: what varies / reacts / validates>
 ```
 
-The agent builds the pattern into the right layer, wires it through `create(...)`, keeps the
-facade API and the tests unchanged, and tells you the extension point. Every card below ends with
-a ready-to-edit `/pattern` line.
+(Kiro CLI: `@pattern ...`; the folder can be left out when you have only one.) The agent builds the
+pattern inside your problem folder, keeps the signatures your Design.txt declares and the tests
+unchanged, marks anything Design.txt doesn't have with a `// DRIFT:` comment, and tells you the
+extension point. Every card below ends with a ready-to-edit `/pattern` line (add your folder).
+
+The examples use a repository / manager / facade shape because that is a common way to write a
+Design.txt. Nothing generates that shape unless your Design.txt declares those classes; with a single
+class (an LRU cache, a rate limiter) the pattern plugs into that class. `create()` in the examples
+means wherever your code builds its objects: a constructor, a static factory, or the test.
 
 ---
 
@@ -17,7 +23,7 @@ a ready-to-edit `/pattern` line.
 
 | Step | Signal in Design.txt | Pattern | Lives in |
 |---|---|---|---|
-| 0 | Always | **Facade + Repository + Manager** (interfaces everywhere, DIP) | all layers (baseline from `/scaffold`) |
+| 0 | Your Design.txt declares a facade, repositories and managers | **Facade + Repository + Manager** (interfaces everywhere, DIP) | the classes you declare |
 | 1 | status, lifecycle, "can only X after Y" | **State** | model |
 | 2 | "types of", "depends on", "policy", "configurable rule" | **Strategy** (+ **Factory** to pick one) | `<concept>/`, used by a manager |
 | 3 | add-ons that stack: taxes, surcharges, retries, logging | **Decorator** | `<concept>/` |
@@ -35,9 +41,13 @@ name what becomes extensible, and say that sentence out loud.
 
 ---
 
-## 0. Baseline: Facade + Repository + Manager
+## 0. Facade + Repository + Manager (only when your Design.txt declares them)
 
-The shape `/scaffold` generates. Every other pattern plugs into it.
+Nothing generates this shape: `/scaffold` builds only the classes your Design.txt declares. When you
+do declare these layers, this is what each one owns, and each must own something: a facade that only
+forwards to a single manager is a duplicate layer, so drop one of them. (`Repository`,
+`InMemoryRepository`, `EventBus` and `IdGenerator` are harness building blocks: `./lld.sh core
+<folder>` copies them into your folder.)
 
 ```java
 // repository/  storage only

@@ -29,8 +29,19 @@ local tooling. They are git-excluded and are not part of the solution.
 - If `.claude/harness/REPO_NOTES.md` doesn't exist yet, suggest running `/onboard` first.
 
 ## Design.txt
-If `Design.txt` exists in the repo root, it is my design for this problem (FRs, NFRs, entities,
-interfaces, patterns). It is local and git-excluded. Follow it, but never edit it.
+My `Design.txt` (any capitalisation, wherever I put it; I'll name the path if there are several)
+is my design for this problem: FRs, NFRs, classes, signatures, patterns. It is local and
+git-excluded (attach.sh excludes the name).
+- Never edit, rewrite or restate it.
+- Its signatures are a contract for the code I add, except where they clash with this repo's
+  existing public API: their API and their tests win, and you tell me about the clash.
+- Every behaviour an FR states (what is returned, thrown, changed) is implemented and tested.
+- You may improve on it when an FR or NFR needs it, but every change from what it says is
+  written into the code as the first line of each affected method (or above the changed field or
+  added class):
+  `// DRIFT: <what Design.txt says, or "not in Design.txt"> -> <what the code does>, because <FR-n | NFR-n | pattern Name>: <why>`
+  Replies that change code end with the DRIFT lines added (or "none"). `grep -rn "DRIFT:" .`
+  lists them all.
 
 ## Commands
 `/onboard` map the repo · `/next` explain the next failing test · `/fr-tests` `/nfr-tests` tests
